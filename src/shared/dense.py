@@ -13,8 +13,7 @@ class Dense:
         self.b = weights[1]  # shape (out_dim,)
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        # TODO: implementasi (adaptasi dari Tubes 1)
-        raise NotImplementedError
+        return self._apply_activation(x @ self.W + self.b)
 
     def _apply_activation(self, z: np.ndarray) -> np.ndarray:
         if self.activation == "relu":
