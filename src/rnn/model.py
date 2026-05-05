@@ -64,11 +64,11 @@ class RNNDecoder:
         token = start_idx
         words = []
         for _ in range(max_len):
-            x_t = self.embedding.forward(np.array(token))  # (embed_dim,)
+            x_t = self.embedding.forward(np.array(token))
             for i, cell in enumerate(self.rnn.cells):
                 h_states[i] = cell.forward(x_t, h_states[i])
                 x_t = h_states[i]
-            logits = self.output_dense.forward(x_t)        # (vocab_size,)
+            logits = self.output_dense.forward(x_t)
             token = int(np.argmax(logits))
             if token == end_idx:
                 break

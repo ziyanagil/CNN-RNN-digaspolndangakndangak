@@ -37,5 +37,5 @@ class SimpleRNN:
             for t in range(seq_len):
                 h = cell.forward(cur_input[t], h)
                 layer_hs.append(h)
-            cur_input = np.stack(layer_hs)  # (seq_len, units) — input for next layer
+            cur_input = np.stack(layer_hs)
         return cur_input if return_sequences else h
