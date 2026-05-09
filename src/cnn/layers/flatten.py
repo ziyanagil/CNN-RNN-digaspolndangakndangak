@@ -3,5 +3,6 @@ import numpy as np
 class Flatten:
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        # TODO: implementasi np.reshape dengan order='C'
-        raise NotImplementedError
+        if x.ndim == 3:
+            return x.reshape(-1, order='C')
+        return x.reshape(x.shape[0], -1, order='C')
