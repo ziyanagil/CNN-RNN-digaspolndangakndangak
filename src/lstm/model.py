@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 from src.shared.dense import Dense
 from src.shared.caption_utils import SPECIAL_TOKENS
@@ -100,7 +101,7 @@ class LSTMDecoder:
         features: np.ndarray,
         max_len: int = 30,
         batch_size: int = 16,
-    ) -> list[str]:
+    ) -> List[str]:
         N = features.shape[0]
         all_captions = []
 
