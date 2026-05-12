@@ -5,16 +5,25 @@ import numpy as np
 
 
 BATCH_SIZE = 32
-EPOCHS = 20
+EPOCHS =int(os.environ.get('CNN_EPOCHS', 10)) 
 IMG_SIZE = (150, 150)
 NUM_CLASSES = 6
 OPTIMIZER = "adam"
 LOSS = "sparse_categorical_crossentropy"
 
-DATA_DIR = "data/intel"
-TRAIN_DIR = f"{DATA_DIR}/seg_train/seg_train"
-VAL_DIR   = f"{DATA_DIR}/seg_test/seg_test"
-TEST_DIR  = f"{DATA_DIR}/seg_pred"
+DATA_DIR = os.environ.get('CNN_DATA_DIR', 'data/intel')
+
+def find_subdir(root, target):
+    for r, dirs, files in os.walk(root):
+        if target in dirs:
+            cand = os.path.join(r, target)
+            if os.path.exists(os.path.join(cand, target)): return os.path.join(cand, target)
+            return cand
+    return os.path.join(root, target)
+
+TRAIN_DIR = find_subdir(DATA_DIR, 'seg_train')
+VAL_DIR   = find_subdir(DATA_DIR, 'seg_test')
+TEST_DIR  = find_subdir(DATA_DIR, 'seg_pred')
 
 
 def build_conv2d_model(
@@ -38,12 +47,12 @@ def build_conv2d_model(
 
 def build_locally_connected_model() -> keras.Model:
     inputs = keras.Input(shape=(64, 64, 3))
-    x = keras.layers.LocallyConnected2D(32, 3, activation='relu', padding='valid')(inputs)
+    x = keras.layers.LocallyConnected2D(32, 3, activation='relu')(inputs)
     x = keras.layers.MaxPooling2D()(x)
-    x = keras.layers.LocallyConnected2D(64, 3, activation='relu', padding='valid')(x)
+    x = keras.layers.LocallyConnected2D(64, 3, activation='relu')(x)
     x = keras.layers.GlobalMaxPooling2D()(x)
     x = keras.layers.Dense(128, activation='relu')(x)
-    outputs = keras.layers.Dense(NUM_CLASSES, activation='softmax')(x)
+    outputs = keras.layers.Dense(6, activation='softmax')(x)
     return keras.Model(inputs, outputs)
 
 
