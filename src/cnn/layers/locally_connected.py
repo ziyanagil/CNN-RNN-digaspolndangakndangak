@@ -20,14 +20,23 @@ class LocallyConnected2D:
         self.strides = tuple(cfg["strides"])
         # inferensi output spatial shape dari bobot
         n_positions = self.kernel.shape[0]
-        # TODO: set self.output_shape_spatial setelah load (perlu info input shape)
+        # Output shape spatial akan diinfer secara on-the-fly saat forward pass
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        # TODO: implementasi
-        # Untuk setiap posisi (i,j) -> index pos = i*W_out + j:
-        #   patch = x[i*sH:i*sH+kH, j*sW:j*sW+kW, :].flatten()
-        #   output[i,j,:] = kernel[pos].T @ patch + bias[pos]
-        raise NotImplementedError
+        kH, kW = self.kernel_size
+        sH, sW = self.strides
+        H, W, C_in = x.shape
+        
+        H_out = (H - kH) // sH + 1
+        W_out = (W - kW) // sW + 1
+        
+        out = np.zeros((H_out, W_out, self.kernel.shape[-1]), dtype=np.float32)
+        for i in range(H_out):
+            for j in range(W_out):
+                pos = i * W_out + j
+                patch = x[i*sH:i*sH+kH, j*sW:j*sW+kW, :].flatten()
+                out[i, j, :] = patch @ self.kernel[pos] + self.bias[pos]
+        return self._apply_activation(out)
 
     def _apply_activation(self, z: np.ndarray) -> np.ndarray:
         if self.activation == "relu":

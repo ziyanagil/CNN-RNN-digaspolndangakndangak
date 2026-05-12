@@ -2,10 +2,9 @@ import numpy as np
 
 
 def relu(x: np.ndarray) -> np.ndarray:
-    # TODO: implementasi
-    raise NotImplementedError
+    return np.maximum(0, x)
 
 
 def softmax(x: np.ndarray) -> np.ndarray:
-    # TODO: implementasi
-    raise NotImplementedError
+    e = np.exp(x - x.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)

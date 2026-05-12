@@ -19,10 +19,20 @@ class Conv2D:
         self.padding = cfg["padding"]
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        # TODO: implementasi sliding window conv2d
-        # Untuk setiap posisi (i,j) dan filter k:
-        #   output[i,j,k] = sum(patch * kernel[...,k]) + bias[k]
-        raise NotImplementedError
+        x_pad = self._pad_input(x)
+        H, W, _ = x_pad.shape
+        kH, kW, C_in, C_out = self.kernel.shape
+        sH, sW = self.strides
+        
+        H_out = (H - kH) // sH + 1
+        W_out = (W - kW) // sW + 1
+        out = np.zeros((H_out, W_out, C_out), dtype=np.float32)
+        
+        for i in range(H_out):
+            for j in range(W_out):
+                patch = x_pad[i*sH:i*sH+kH, j*sW:j*sW+kW, :]
+                out[i, j, :] = np.einsum('hwc,hwck->k', patch, self.kernel) + self.bias
+        return self._apply_activation(out)
 
     def _pad_input(self, x: np.ndarray) -> np.ndarray:
         if self.padding == "valid":
