@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Dict, List
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -23,7 +24,7 @@ def build_lstm_decoder(
 ) -> keras.Model:
     feat_input = keras.Input(shape=(feature_dim,), name="feature")
     x_minus1 = keras.layers.Dense(embed_dim, name="feat_proj")(feat_input)
-    x_minus1 = tf.expand_dims(x_minus1, axis=1)
+    x_minus1 = keras.layers.Reshape((1, embed_dim), name="feat_expand")(x_minus1)
 
     cap_input = keras.Input(shape=(max_len,), name="caption", dtype=tf.int32)
     cap_emb = keras.layers.Embedding(
@@ -46,13 +47,15 @@ def build_lstm_decoder(
         vocab_size, activation="softmax", name="output_dense"
     )(x)
 
-    model = keras.Model(inputs=[feat_input, cap_input], outputs=output)
+    output_sliced = keras.layers.Cropping1D(cropping=(1, 0), name="drop_feat_pos")(output)
+
+    model = keras.Model(inputs=[feat_input, cap_input], outputs=output_sliced)
     return model
 
 def build_dataset(
     features: np.ndarray,
-    image_ids: list[str],
-    captions_per_image: dict[str, list[np.ndarray]],
+    image_ids: List[str],
+    captions_per_image: Dict[str, List[np.ndarray]],
     batch_size: int = BATCH_SIZE,
     shuffle: bool = True,
 ) -> tf.data.Dataset:
