@@ -31,4 +31,10 @@ class CNNScratch:
     def predict(self, x: np.ndarray) -> np.ndarray:
         if x.ndim == 3:
             return self.forward(x)
-        return np.stack([self.forward(xi) for xi in x])
+        out = x
+        for layer in self.layers:
+            if hasattr(layer, 'forward_batch'):
+                out = layer.forward_batch(out)
+            else:
+                out = np.stack([layer.forward(xi) for xi in out])
+        return out

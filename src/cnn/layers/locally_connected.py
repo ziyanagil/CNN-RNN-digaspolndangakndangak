@@ -18,9 +18,6 @@ class LocallyConnected2D:
         cfg = keras_layer.get_config()
         self.kernel_size = tuple(cfg["kernel_size"])
         self.strides = tuple(cfg["strides"])
-        # inferensi output spatial shape dari bobot
-        n_positions = self.kernel.shape[0]
-        # Output shape spatial akan diinfer secara on-the-fly saat forward pass
 
     def forward(self, x: np.ndarray) -> np.ndarray:
         kH, kW = self.kernel_size
@@ -37,6 +34,10 @@ class LocallyConnected2D:
                 patch = x[i*sH:i*sH+kH, j*sW:j*sW+kW, :].flatten()
                 out[i, j, :] = patch @ self.kernel[pos] + self.bias[pos]
         return self._apply_activation(out)
+
+    def forward_batch(self, X: np.ndarray) -> np.ndarray:
+        # X: (N, H, W, C) — LC2D is inherently per-position, loop over batch
+        return np.stack([self.forward(x) for x in X])
 
     def _apply_activation(self, z: np.ndarray) -> np.ndarray:
         if self.activation == "relu":
