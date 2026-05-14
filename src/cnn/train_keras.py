@@ -47,13 +47,27 @@ def build_conv2d_model(
 
 def build_locally_connected_model() -> keras.Model:
     inputs = keras.Input(shape=(64, 64, 3))
-    x = keras.layers.LocallyConnected2D(32, 3, activation='relu')(inputs)
+    
+    if hasattr(keras.layers, 'LocallyConnected2D'):
+        LC2D = keras.layers.LocallyConnected2D
+    else:
+        try:
+            import tf_keras
+            LC2D = tf_keras.layers.LocallyConnected2D
+            print("Using LocallyConnected2D from tf_keras")
+        except ImportError:
+            import tensorflow as tf
+            LC2D = tf.keras.layers.LocallyConnected2D
+            print("Using LocallyConnected2D from tf.keras.layers")
+
+    x = LC2D(32, 3, activation='relu')(inputs)
     x = keras.layers.MaxPooling2D()(x)
-    x = keras.layers.LocallyConnected2D(64, 3, activation='relu')(x)
+    x = LC2D(64, 3, activation='relu')(x)
     x = keras.layers.GlobalMaxPooling2D()(x)
     x = keras.layers.Dense(128, activation='relu')(x)
     outputs = keras.layers.Dense(6, activation='softmax')(x)
     return keras.Model(inputs, outputs)
+
 
 
 def get_data_loaders(img_size=IMG_SIZE, batch_size=BATCH_SIZE):
